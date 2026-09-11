@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Searchable clipboard history for Chrome. Favourites, folders and export, all stored on your own machine. From $0.99 a week.">
+
+<!-- Shown when the link is pasted into Slack, Messenger, X, etc. Set og:url and
+     og:image to real URLs once the page has a home. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Clipboard Manager Pro">
+<meta property="og:description" content="Searchable clipboard history for Chrome. Favourites, folders and export, all stored on your own machine. From $0.99 a week.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128203;</text></svg>">
+
+<style>
+  :root { color-scheme: light dark; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Clipboard Manager Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400..800&display=swap">
+
+<style>
+/* ---------------------------------------------------------------------------
+   Tokens are lifted from the extension's own popup.css so the page and the
+   product are visibly the same object. Light is the base; the two dark blocks
+   restate values only.
+--------------------------------------------------------------------------- */
+:root {
+  --bg: #ffffff;
+  --bg-sunken: #f6f7fb;
+  --surface: #ffffff;
+  --surface-hover: #f2f3fa;
+  --surface-active: #ecedf9;
+
+  --text: #191627;
+  --text-soft: #55516b;
+  --text-muted: #8d8aa3;
+
+  --border: #e8e7f1;
+  --border-strong: #d8d6e8;
+
+  --accent: #5b4bf5;
+  --accent-hover: #4a39e8;
+  --accent-soft: #eeecff;
+  --accent-text: #4a39e8;
+  --accent-ring: rgba(91, 75, 245, 0.28);
+
+  --star: #f0a12e;
+  --ok: #17a34a;
+  --mark: #ffe08a;
+  --mark-text: #3d2d00;
+
+  --type-url: #2563eb;
+  --type-email: #0e8fa8;
+  --type-phone: #12925a;
+  --type-number: #a8620a;
+
+  --shadow-md: 0 4px 14px rgba(25, 22, 39, 0.1);
+  --shadow-lg: 0 18px 44px rgba(25, 22, 39, 0.18);
+
+  --r-sm: 8px;
+  --r-md: 11px;
+  --r-lg: 16px;
+
+  --display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --maxw: 1140px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14131c;
+    --bg-sunken: #100f17;
+    --surface: #1c1b26;
+    --surface-hover: #262533;
+    --surface-active: #2f2d3e;
+
+    --text: #eeecf7;
+    --text-soft: #b6b2cc;
+    --text-muted: #85819c;
+
+    --border: #2b2939;
+    --border-strong: #3a3850;
+
+    --accent: #8878ff;
+    --accent-hover: #9a8cff;
+    --accent-soft: #272147;
+    --accent-text: #b3a7ff;
+    --accent-ring: rgba(136, 120, 255, 0.35);
+
+    --star: #f5b544;
+    --ok: #4ade80;
+    --mark: #7a5a00;
+    --mark-text: #ffe9ae;
+
+    --type-url: #79a5ff;
+    --type-email: #56cbe3;
+    --type-phone: #56d99b;
+    --type-number: #e0a35c;
+
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #14131c;
+  --bg-sunken: #100f17;
+  --surface: #1c1b26;
+  --surface-hover: #262533;
+  --surface-active: #2f2d3e;
+
+  --text: #eeecf7;
+  --text-soft: #b6b2cc;
+  --text-muted: #85819c;
+
+  --border: #2b2939;
+  --border-strong: #3a3850;
+
+  --accent: #8878ff;
+  --accent-hover: #9a8cff;
+  --accent-soft: #272147;
+  --accent-text: #b3a7ff;
+  --accent-ring: rgba(136, 120, 255, 0.35);
+
+  --star: #f5b544;
+  --ok: #4ade80;
+  --mark: #7a5a00;
+  --mark-text: #ffe9ae;
+
+  --type-url: #79a5ff;
+  --type-email: #56cbe3;
+  --type-phone: #56d99b;
+  --type-number: #e0a35c;
+
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-text); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* --- masthead ----------------------------------------------------------- */
+
+.masthead {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.masthead-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: 62px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--accent);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 13px;
+  flex: none;
+}
+
+.masthead-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 14.5px;
+}
+
+.masthead-nav a {
+  color: var(--text-soft);
+  text-decoration: none;
+}
+
+.masthead-nav a:hover { color: var(--text); }
+
+/* --- shared type -------------------------------------------------------- */
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+h1 { font-size: clamp(38px, 5.4vw, 60px); line-height: 1.03; }
+h2 { font-size: clamp(27px, 3.2vw, 36px); line-height: 1.12; }
+h3 { font-size: 18px; line-height: 1.3; }
+
+.lede {
+  font-size: 17.5px;
+  color: var(--text-soft);
+  max-width: 56ch;
+  margin: 20px 0 0;
+}
+
+.section {
+  padding: 88px 0;
+  border-top: 1px solid var(--border);
+}
+
+.section-head { max-width: 60ch; margin-bottom: 40px; }
+.section-head p { color: var(--text-soft); margin: 14px 0 0; }
+
+/* --- hero --------------------------------------------------------------- */
+
+.hero {
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border);
+  padding: 76px 0 84px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+  gap: 64px;
+  align-items: center;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--accent-text);
+}
+
+.price-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 26px 0 0;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
+.price-line b {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--r-md);
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-ghost {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.btn-ghost:hover { background: var(--surface-hover); }
+
+/* --- popup replica -------------------------------------------------------
+   Rules lifted from the extension's popup.css, so this is the product rather
+   than an impression of it: 400x560, Inter, the same chrome and spacing.
+--------------------------------------------------------------------------- */
+
+.demo-col { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+
+.popup {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 13px;
+  width: 400px;
+  max-width: 100%;
+  height: 560px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.cm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px 11px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.cm-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.cm-brand img { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; }
+.cm-brand-name { font-weight: 650; font-size: 13.5px; letter-spacing: -0.01em; white-space: nowrap; }
+
+.cm-topbar-actions { display: flex; align-items: center; gap: 3px; }
+
+.cm-pro-pill {
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, #6a53ff, #a03df0);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 750;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  padding: 4px 9px;
+  border-radius: 99px;
+  margin-left: 4px;
+  box-shadow: 0 2px 10px var(--accent-ring);
+  cursor: pointer;
+}
+
+.cm-toolbar { display: flex; gap: 8px; padding: 11px 12px 8px; flex-shrink: 0; }
+.cm-search-wrap { position: relative; flex: 1; min-width: 0; }
+
+.cm-search-wrap input {
+  width: 100%;
+  padding: 8px 28px 8px 29px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12.5px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.cm-search-wrap input::placeholder { color: var(--text-muted); }
+.cm-search-wrap input:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.cm-search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-52%);
+  font-size: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.cm-folder-select {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 0 5px;
+  max-width: 116px;
+  cursor: pointer;
+}
+
+.cm-chips {
+  display: flex;
+  gap: 5px;
+  padding: 0 12px 9px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cm-chips::-webkit-scrollbar { display: none; }
+
+.cm-chip {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-soft);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 99px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.14s, color 0.14s, border-color 0.14s;
+}
+.cm-chip:hover { background: var(--surface-hover); color: var(--text); }
+.cm-chip[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}
+
+.cm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 10px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.cm-list::-webkit-scrollbar { width: 9px; }
+.cm-list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.cm-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 9px 9px 7px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.13s, border-color 0.13s;
+}
+.cm-item:hover { background: var(--surface-hover); }
+.cm-item[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent-ring); }
+.cm-item[aria-selected="true"]:hover { background: var(--accent-soft); }
+.cm-item[aria-selected="true"] .cm-index { background: var(--accent); color: #fff; }
+
+.cm-index {
+  flex-shrink: 0;
+  min-width: 19px;
+  height: 19px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.cm-body { flex: 1; min-width: 0; }
+
+.cm-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+}
+.cm-text mark {
+  background: var(--mark);
+  color: var(--mark-text);
+  border-radius: 3px;
+  padding: 0 1px;
+  font-weight: 650;
+}
+
+.cm-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.badge {
+  border-radius: 5px;
+  padding: 1px 5px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.badge-url { color: var(--type-url); }
+.badge-email { color: var(--type-email); }
+.badge-phone { color: var(--type-phone); }
+.badge-number { color: var(--type-number); }
+.badge-folder { color: var(--text-soft); text-transform: none; letter-spacing: 0; }
+
+.cm-actions {
+  display: flex;
+  gap: 1px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.13s;
+}
+.cm-item:hover .cm-actions,
+.cm-item[aria-selected="true"] .cm-actions,
+.cm-item.is-fav .cm-actions { opacity: 1; }
+
+.cm-actions button {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 5px;
+  border-radius: var(--r-sm);
+  line-height: 1;
+  font-family: inherit;
+}
+.cm-actions button:hover { background: var(--surface-active); color: var(--text); }
+.cm-item.is-fav .cm-fav { color: var(--star); }
+
+.cm-empty {
+  padding: 34px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.cm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 9px 7px 13px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-sunken);
+  flex-shrink: 0;
+}
+
+.cm-count {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.cm-foot-actions { display: flex; gap: 1px; }
+
+.cm-icon-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 6px 7px;
+  border-radius: var(--r-sm);
+  line-height: 1;
+  font-family: inherit;
+}
+.cm-icon-btn:hover { background: var(--surface-active); color: var(--text); }
+
+.demo-hint {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+.demo-hint kbd { margin: 0 1px; }
+
+kbd {
+  font-family: var(--mono);
+  font-size: 0.87em;
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translate(-50%, 14px);
+  background: var(--text);
+  color: var(--bg);
+  padding: 9px 17px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s, transform 0.18s;
+  z-index: 40;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* --- shortcuts ---------------------------------------------------------- */
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 0 34px;
+}
+
+.key-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.key-row span { color: var(--text-soft); font-size: 14.5px; }
+.key-row div { flex: none; }
+
+/* --- comparison --------------------------------------------------------- */
+
+.compare-scroll { overflow-x: auto; }
+
+table.compare {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+table.compare th,
+table.compare td {
+  text-align: left;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+table.compare thead th {
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom-color: var(--border-strong);
+}
+
+table.compare td + td,
+table.compare th + th {
+  text-align: center;
+  width: 118px;
+}
+
+table.compare tbody th {
+  font-weight: 400;
+  color: var(--text-soft);
+}
+
+table.compare .col-pro {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.yes { color: var(--ok); font-weight: 600; }
+.no { color: var(--text-muted); }
+
+.num {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- pricing ------------------------------------------------------------ */
+
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.tier.is-best {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.tier-name {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tier-price {
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.tier-per { font-size: 14px; color: var(--text-muted); }
+
+.tier-note {
+  font-size: 13.5px;
+  color: var(--text-soft);
+  margin: 4px 0 0;
+  min-height: 40px;
+}
+
+.tier .btn { margin-top: auto; justify-content: center; }
+
+.tier-flag {
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.tiers-foot {
+  margin: 22px 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* --- privacy ------------------------------------------------------------ */
+
+.privacy {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+}
+
+.privacy h3 { margin-bottom: 8px; }
+.privacy p { margin: 0; color: var(--text-soft); font-size: 14.5px; }
+
+.privacy code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+/* --- footer ------------------------------------------------------------- */
+
+.foot {
+  border-top: 1px solid var(--border);
+  background: var(--bg-sunken);
+  padding: 34px 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.foot-in {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (max-width: 880px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+  .demo-col { max-width: 400px; width: 100%; }
+  .masthead-nav { display: none; }
+  .section { padding: 62px 0; }
+  .hero { padding: 54px 0 62px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap masthead-in">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">&#9782;</span>
+      Clipboard Manager
+    </a>
+    <nav class="masthead-nav">
+      <a href="#what">What you get</a>
+      <a href="#keys">Shortcuts</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Chrome extension</p>
+        <h1>Everything you copied.<br><em>Still there.</em></h1>
+        <p class="lede">
+          Clipboard Manager keeps a searchable history of every snippet you copy in
+          Chrome. Favourites, folders, export — and it never sends a thing anywhere.
+          Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> to open it.
+        </p>
+        <p class="price-line">
+          <b>From $0.99 / week</b>
+          <span>&middot; free tier keeps your last 50 clips</span>
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/YOUR-EXTENSION-ID">Install for Chrome</a>
+          <a class="btn btn-ghost" href="#pricing">See pricing</a>
+        </div>
+      </div>
+
+      <div class="demo-col">
+        <div class="popup" id="demo">
+          <header class="cm-topbar">
+            <div class="cm-brand">
+              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA2klEQVR4nGNgGGDAiEvC3+3pf2pbtnGXNIZ9GAK0sBifQ5jobTm6PUzYBOnpCBZyNFf0SOKU6yh5TpJZTMiuoTfwd3v6n6gQ2LBTCoV/4jJu96KrDXB/htdsJryyWAzEByx0MXM1If1kpQFsFpELCIYArcGoA0hKAynpn4hWO2cmH1HqiA4BUiwnRT3RDiDWR6SqJykKSHUE1R0wmgZIAaNpYDQNDJk0MOCV0eBwALYeCwwQatMRAvj0b9wlzUhUGqDUEfgAPArwhQItAMw+JmyC9LKcgWEQ9I4BujVVf4PVOzgAAAAASUVORK5CYII=" alt="" width="22" height="22">
+              <span class="cm-brand-name">Clipboard Manager</span>
+            </div>
+            <div class="cm-topbar-actions">
+              <button class="cm-icon-btn" type="button" title="Theme">&#9680;</button>
+              <button class="cm-icon-btn" type="button" title="Capture current clipboard">&#10549;</button>
+              <button class="cm-pro-pill" type="button">PRO</button>
+            </div>
+          </header>
+
+          <div class="cm-toolbar">
+            <div class="cm-search-wrap">
+              <span class="cm-search-icon" aria-hidden="true">&#8981;</span>
+              <input id="q" type="search" placeholder="Search..." autocomplete="off"
+                     spellcheck="false" aria-label="Search the demo clipboard history">
+            </div>
+            <select class="cm-folder-select" aria-label="Folder">
+              <option>All folders</option>
+              <option>Danh b&#7841;</option>
+              <option>Snippets</option>
+            </select>
+          </div>
+
+          <div class="cm-chips" id="chips" role="group" aria-label="Filter by type">
+            <button class="cm-chip" type="button" data-f="all" aria-pressed="true">All</button>
+            <button class="cm-chip" type="button" data-f="fav" aria-pressed="false">&#9733; Favorites</button>
+            <button class="cm-chip" type="button" data-f="url" aria-pressed="false">Links</button>
+            <button class="cm-chip" type="button" data-f="email" aria-pressed="false">Emails</button>
+            <button class="cm-chip" type="button" data-f="phone" aria-pressed="false">Phones</button>
+          </div>
+
+          <ul class="cm-list" id="clips" tabindex="0" role="listbox" aria-label="Demo clipboard history"></ul>
+
+          <footer class="cm-footer">
+            <span class="cm-count" id="count"></span>
+            <div class="cm-foot-actions">
+              <button class="cm-icon-btn" type="button" title="Shortcuts">&#9000;</button>
+              <button class="cm-icon-btn" type="button" title="Copy all">&#10697;</button>
+              <button class="cm-icon-btn" type="button" title="Select">&#9745;</button>
+              <button class="cm-icon-btn" type="button" title="Export">&#10515;</button>
+              <button class="cm-icon-btn" type="button" title="Import">&#10514;</button>
+              <button class="cm-icon-btn" type="button" title="Settings">&#9881;</button>
+              <button class="cm-icon-btn" type="button" title="Clear">&#128465;</button>
+            </div>
+          </footer>
+        </div>
+        <p class="demo-hint">
+          A working copy. Type <b>nguyen</b>, or press <kbd>&#8593;</kbd> <kbd>&#8595;</kbd> <kbd>Enter</kbd>.
+        </p>
+    </div>
+  </section>
+
+  <section class="section" id="what">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Free and Pro</p>
+        <h2>The free tier is genuinely useful. Pro is for people who copy all day.</h2>
+        <p>
+          Everything runs on your own machine either way. Pro raises the ceiling and
+          unlocks the tools that make a long history worth keeping.
+        </p>
+      </div>
+
+      <div class="compare-scroll">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th scope="col">Feature</th>
+              <th scope="col">Free</th>
+              <th scope="col" class="col-pro">Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Clips kept</th>
+              <td class="num">50</td>
+              <td class="num col-pro">10,000</td>
+            </tr>
+            <tr>
+              <th scope="row">Captures every copy, on any page</th>
+              <td class="yes">&#10003;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Sorts links, emails, phones and numbers for you</th>
+              <td class="yes">&#10003;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Right-click to paste a recent clip</th>
+              <td class="yes">&#10003;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Search, ignoring accents &mdash; <span class="num">nguyen</span> finds <span class="num">Nguy&#7877;n</span></th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Favourites, never auto-deleted</th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Folders for the snippets you reuse</th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Copy the first nine clips with one keystroke</th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Clear out clips older than N days</th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Export to CSV, text, Markdown or JSON</th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+            <tr>
+              <th scope="row">Select many at once to move, export or delete</th>
+              <td class="no">&mdash;</td>
+              <td class="yes col-pro">&#10003;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="keys">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Never touch the mouse</p>
+        <h2>Nine keys, and the window is gone before you've thought about it.</h2>
+      </div>
+      <div class="keys">
+        <div class="key-row"><span>Open Clipboard Manager</span><div><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd></div></div>
+        <div class="key-row"><span>Select previous / next clip</span><div><kbd>&#8593;</kbd> <kbd>&#8595;</kbd></div></div>
+        <div class="key-row"><span>Copy the selected clip</span><div><kbd>Enter</kbd></div></div>
+        <div class="key-row"><span>Copy clip number one to nine</span><div><kbd>1</kbd>&ndash;<kbd>9</kbd></div></div>
+        <div class="key-row"><span>Paste straight into the page</span><div><kbd>Ctrl</kbd>+<kbd>Enter</kbd></div></div>
+        <div class="key-row"><span>Star the selected clip</span><div><kbd>F</kbd></div></div>
+        <div class="key-row"><span>Delete the selected clip</span><div><kbd>Delete</kbd></div></div>
+        <div class="key-row"><span>Jump to search</span><div><kbd>/</kbd></div></div>
+        <div class="key-row"><span>Close the window</span><div><kbd>Esc</kbd></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Pricing</p>
+        <h2>Pay for a week, a month, or a year. Stop whenever.</h2>
+        <p>
+          One subscription, every feature &mdash; there is no higher tier to upsell you to.
+          Cancel from your receipt email and Pro simply stops at the end of the period.
+        </p>
+      </div>
+
+      <div class="tiers">
+        <div class="tier">
+          <div class="tier-name">Weekly</div>
+          <div class="tier-price">$0.99</div>
+          <div class="tier-per">per week</div>
+          <p class="tier-note">For a busy stretch &mdash; a migration, a launch week, a pile of data entry.</p>
+          <a class="btn btn-ghost" href="https://YOUR-STORE.lemonsqueezy.com/buy/WEEKLY-VARIANT-ID">Start weekly</a>
+        </div>
+
+        <div class="tier">
+          <div class="tier-name">Monthly</div>
+          <div class="tier-price">$3.99</div>
+          <div class="tier-per">per month</div>
+          <p class="tier-note">The usual choice if the clipboard is part of how you work.</p>
+          <a class="btn btn-ghost" href="https://YOUR-STORE.lemonsqueezy.com/buy/MONTHLY-VARIANT-ID">Start monthly</a>
+        </div>
+
+        <div class="tier is-best">
+          <span class="tier-flag">Save 52%</span>
+          <div class="tier-name">Yearly</div>
+          <div class="tier-price">$22.99</div>
+          <div class="tier-per">per year &mdash; works out at $1.92 a month</div>
+          <p class="tier-note">Cheaper than five months of the monthly plan, and you stop thinking about it.</p>
+          <a class="btn btn-primary" href="https://YOUR-STORE.lemonsqueezy.com/buy/YEARLY-VARIANT-ID">Start yearly</a>
+        </div>
+      </div>
+
+      <p class="tiers-foot">
+        Prices in USD. Payments and receipts are handled by Lemon Squeezy.
+        Your licence key arrives by email &mdash; paste it into the extension and Pro turns on.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Where your clips live</p>
+        <h2>On your computer. That is the whole architecture.</h2>
+      </div>
+      <div class="privacy">
+        <div>
+          <h3>No server, no account</h3>
+          <p>
+            Your history is written to Chrome's own <code>storage.local</code> on your
+            machine. There is nothing to sign up for and nowhere for the text to go.
+          </p>
+        </div>
+        <div>
+          <h3>Text only</h3>
+          <p>
+            Images and files are never captured. Up to 20,000 characters per clip,
+            and only what you actually copied &mdash; no formatting, no metadata.
+          </p>
+        </div>
+        <div>
+          <h3>Yours to take out</h3>
+          <p>
+            Export the lot to CSV, text, Markdown or JSON whenever you like. The JSON
+            imports straight back, so leaving is as easy as arriving.
+          </p>
+        </div>
+        <div>
+          <h3>Pause it any time</h3>
+          <p>
+            Turn capture off in settings and the extension stops recording &mdash;
+            useful before you copy a password. Favourites are never auto-deleted.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span>Clipboard Manager &mdash; clipboard history for Chrome</span>
+    <span>Ctrl+Shift+V</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  /* The demo runs the extension's own two rules: strip diacritics before
+     matching, and lay each row out the way popup.js builds it - index chip,
+     text, meta badges, hover actions. */
+  var CLIPS = [
+    { text: "Nguy\u1ec5n V\u0103n An", type: "text", fav: true, folder: "Danh b\u1ea1", ago: "2 min ago" },
+    { text: "https://app.lemonsqueezy.com/orders", type: "url", fav: false, folder: null, ago: "8 min ago" },
+    { text: "ke-toan@congty.vn", type: "email", fav: false, folder: "Danh b\u1ea1", ago: "14 min ago" },
+    { text: "0901 234 567", type: "phone", fav: false, folder: null, ago: "26 min ago" },
+    { text: "1.284.500", type: "number", fav: false, folder: null, ago: "1 hour ago" },
+    { text: "\u0110\u1ecba ch\u1ec9 giao h\u00e0ng: 12 Nguy\u1ec5n Hu\u1ec7, Qu\u1eadn 1, TP.HCM", type: "text", fav: true, folder: null, ago: "3 hours ago" },
+    { text: "SELECT id, ts FROM clips ORDER BY ts DESC LIMIT 50;", type: "text", fav: false, folder: "Snippets", ago: "yesterday" },
+    { text: "https://chromewebstore.google.com/category/extensions", type: "url", fav: false, folder: null, ago: "yesterday" },
+    { text: "ho-tro@congty.vn", type: "email", fav: false, folder: null, ago: "2 days ago" }
+  ];
+
+  var TYPE_LABEL = { url: "link", email: "email", phone: "phone", number: "number" };
+
+  var listEl = document.getElementById("clips");
+  var qEl = document.getElementById("q");
+  var countEl = document.getElementById("count");
+  var chipsEl = document.getElementById("chips");
+  var toastEl = document.getElementById("toast");
+
+  var query = "";
+  var filter = "all";
+  var selected = 0;
+  var visible = [];
+
+  function norm(s) {
+    return String(s)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\u0111/g, "d")
+      .replace(/\u0110/g, "D")
+      .toLowerCase();
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* Match on the stripped string, then slice the ORIGINAL at the same offsets,
+     so searching "nguyen" highlights the accented letters as they were typed
+     rather than a stripped-down copy of them. */
+  function highlight(text) {
+    if (!query) return esc(text);
+    var i = norm(text).indexOf(norm(query));
+    if (i === -1) return esc(text);
+    var j = i + query.length;
+    return esc(text.slice(0, i)) + "<mark>" + esc(text.slice(i, j)) + "</mark>" + esc(text.slice(j));
+  }
+
+  function matches(clip) {
+    if (filter === "fav" && !clip.fav) return false;
+    if (filter !== "all" && filter !== "fav" && clip.type !== filter) return false;
+    if (!query) return true;
+    return norm(clip.text).indexOf(norm(query)) !== -1;
+  }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { toastEl.classList.remove("show"); }, 1500);
+  }
+
+  function row(clip, i) {
+    var meta = '<span>' + clip.ago + "</span>";
+    if (TYPE_LABEL[clip.type]) {
+      meta += '<span class="badge badge-' + clip.type + '">' + TYPE_LABEL[clip.type] + "</span>";
+    }
+    if (clip.folder) {
+      meta += '<span class="badge badge-folder">\ud83d\udcc1 ' + esc(clip.folder) + "</span>";
+    }
+    return '<li class="cm-item' + (clip.fav ? " is-fav" : "") + '" role="option"' +
+      ' aria-selected="' + (i === selected) + '" data-i="' + i + '">' +
+      '<div class="cm-index">' + (i + 1) + "</div>" +
+      '<div class="cm-body">' +
+        '<div class="cm-text">' + highlight(clip.text) + "</div>" +
+        '<div class="cm-meta">' + meta + "</div>" +
+      "</div>" +
+      '<div class="cm-actions">' +
+        '<button class="cm-fav" type="button" title="Favorite">' + (clip.fav ? "\u2605" : "\u2606") + "</button>" +
+        '<button type="button" title="Move to folder">\ud83d\udcc1</button>' +
+        '<button type="button" title="Paste into the page">\u23ce</button>' +
+        '<button type="button" title="Delete">\u2715</button>' +
+      "</div></li>";
+  }
+
+  function render() {
+    visible = CLIPS.filter(matches);
+    if (selected >= visible.length) selected = Math.max(visible.length - 1, 0);
+
+    if (!visible.length) {
+      listEl.innerHTML = '<li class="cm-empty">Nothing matches that.</li>';
+      countEl.textContent = "0 / \u221e";
+      return;
+    }
+
+    listEl.innerHTML = visible.map(row).join("");
+    countEl.textContent = visible.length + " / \u221e";
+
+    var active = listEl.querySelector('[aria-selected="true"]');
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: "nearest" });
+  }
+
+  listEl.addEventListener("click", function (e) {
+    var item = e.target.closest(".cm-item");
+    if (!item) return;
+    var i = Number(item.dataset.i);
+    var action = e.target.closest(".cm-actions button");
+
+    if (action) {
+      if (action.classList.contains("cm-fav")) {
+        visible[i].fav = !visible[i].fav;
+        render();
+        toast(visible[i].fav ? "Added to favorites" : "Removed from favorites");
+      } else {
+        toast(action.title);
+      }
+      return;
+    }
+    selected = i;
+    render();
+    toast("Copied");
+  });
+
+  chipsEl.addEventListener("click", function (e) {
+    var chip = e.target.closest(".cm-chip");
+    if (!chip) return;
+    filter = chip.dataset.f;
+    selected = 0;
+    Array.prototype.forEach.call(chipsEl.children, function (c) {
+      c.setAttribute("aria-pressed", String(c === chip));
+    });
+    render();
+  });
+
+  qEl.addEventListener("input", function () {
+    query = qEl.value.trim();
+    selected = 0;
+    render();
+  });
+
+  listEl.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!visible.length) return;
+      selected = (selected + (e.key === "ArrowDown" ? 1 : -1) + visible.length) % visible.length;
+      render();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (visible[selected]) toast("Copied");
+    } else if (/^[1-9]$/.test(e.key)) {
+      e.preventDefault();
+      if (!visible[Number(e.key) - 1]) return;
+      selected = Number(e.key) - 1;
+      render();
+      toast("Copied");
+    } else if (e.key.toLowerCase() === "f") {
+      e.preventDefault();
+      if (!visible[selected]) return;
+      visible[selected].fav = !visible[selected].fav;
+      render();
+      toast(visible[selected].fav ? "Added to favorites" : "Removed from favorites");
+    } else if (e.key === "/") {
+      e.preventDefault();
+      qEl.focus();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
